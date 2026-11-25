@@ -1,0 +1,440 @@
+{
+  "generator": "BadGun",
+  "version": "0.1.0",
+  "name": "BadGun_pistol_scrap_3",
+  "recipe": {
+    "archetype": "pistol",
+    "style": "scrap",
+    "seed": 3
+  },
+  "resolved": {
+    "params": {
+      "length": 0.494,
+      "bulk": 0.71,
+      "ornament": 0.013,
+      "detail": 0.683,
+      "smoothness": 0.401,
+      "wear": 0.664
+    },
+    "parts": {
+      "frame": "nailgun",
+      "grip": "taped",
+      "muzzle": "none",
+      "underbarrel": "none",
+      "sight": "none"
+    },
+    "palette": "Scavenger Blue"
+  },
+  "conventions": {
+    "units": "meters",
+    "up": "+Y",
+    "forward": "+Z (muzzle direction)",
+    "left": "+X (the ejection port is on the right, -X)",
+    "origin": "Trigger hand on the pistol grip (SOCKET_Hand_Grip)",
+    "uv": "Two UV sets. Tiling: a physical unwrap, 1 UV unit = 0.25 m, for tiling textures and trim sheets (islands may overlap). Atlas: every surface packed once into the 0..1 square with uniform texel density and no overlaps, for hand painting, baking and unique texture sets. See \"uv\" for which set is which.",
+    "materials": "One shared material per semantic slot (MAT_<Slot>); names are stable across regenerations",
+    "sockets": "Empty nodes named SOCKET_*; their +Z axis is the socket forward direction"
+  },
+  "materials": [
+    {
+      "name": "MAT_Body",
+      "slot": "Body",
+      "def": {
+        "label": "faded blue paint",
+        "color": "#546777",
+        "metallic": 0.4,
+        "roughness": 0.8398620179374703
+      }
+    },
+    {
+      "name": "MAT_Barrel",
+      "slot": "Barrel",
+      "def": {
+        "label": "worn pipe steel",
+        "color": "#403c37",
+        "metallic": 0.8,
+        "roughness": 0.7197585313905729
+      }
+    },
+    {
+      "name": "MAT_Stock",
+      "slot": "Stock",
+      "def": {
+        "label": "dark scrap wood",
+        "color": "#604a38",
+        "metallic": 0,
+        "roughness": 0.8798965134531026
+      }
+    },
+    {
+      "name": "MAT_Magazine",
+      "slot": "Magazine",
+      "def": {
+        "label": "rusty steel",
+        "color": "#7c5134",
+        "metallic": 0.5,
+        "roughness": 0.8798965134531026
+      }
+    },
+    {
+      "name": "MAT_Accent",
+      "slot": "Accent",
+      "def": {
+        "label": "red tape",
+        "color": "#a43b33",
+        "metallic": 0.1,
+        "roughness": 0.6797240358749405
+      }
+    },
+    {
+      "name": "MAT_Detail",
+      "slot": "Detail",
+      "def": {
+        "label": "bolts and nails",
+        "color": "#2e2b28",
+        "metallic": 0.9,
+        "roughness": 0.6797240358749405
+      }
+    },
+    {
+      "name": "MAT_Emissive",
+      "slot": "Emissive",
+      "def": {
+        "label": "embers",
+        "color": "#230c03",
+        "metallic": 0,
+        "roughness": 0.7149482567265513,
+        "emissive": "#ff6a1a",
+        "emissiveStrength": 1.1402069730937947
+      }
+    }
+  ],
+  "components": [
+    {
+      "name": "Frame",
+      "kind": "frame",
+      "variant": "nailgun",
+      "parent": null,
+      "pivot": [
+        0,
+        0.057,
+        0.0598
+      ],
+      "materials": [
+        "MAT_Accent",
+        "MAT_Body",
+        "MAT_Detail"
+      ],
+      "triangles": 532
+    },
+    {
+      "name": "Barrel",
+      "kind": "barrel",
+      "variant": "driver",
+      "parent": "Frame",
+      "pivot": [
+        0,
+        0.057,
+        0.1633
+      ],
+      "materials": [
+        "MAT_Body",
+        "MAT_Detail",
+        "MAT_Barrel"
+      ],
+      "triangles": 152
+    },
+    {
+      "name": "Trigger",
+      "kind": "trigger",
+      "variant": "blade",
+      "parent": "Frame",
+      "pivot": [
+        0,
+        0.0362,
+        0.0518
+      ],
+      "motion": {
+        "type": "rotate",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range": [
+          0,
+          0.3
+        ],
+        "purpose": "fire"
+      },
+      "materials": [
+        "MAT_Detail"
+      ],
+      "triangles": 44
+    },
+    {
+      "name": "Magazine",
+      "kind": "magazine",
+      "variant": "battery",
+      "parent": "Frame",
+      "pivot": [
+        0,
+        0.0342,
+        0.0052
+      ],
+      "motion": {
+        "type": "translate",
+        "axis": [
+          0,
+          -0.9757457805946451,
+          -0.21890676474642493
+        ],
+        "range": [
+          0,
+          0.06
+        ],
+        "purpose": "reload"
+      },
+      "materials": [
+        "MAT_Magazine",
+        "MAT_Body",
+        "MAT_Emissive"
+      ],
+      "triangles": 76
+    },
+    {
+      "name": "Grip",
+      "kind": "grip",
+      "variant": "taped",
+      "parent": "Frame",
+      "pivot": [
+        0,
+        0.0342,
+        0.0298
+      ],
+      "materials": [
+        "MAT_Stock",
+        "MAT_Accent"
+      ],
+      "triangles": 64
+    }
+  ],
+  "sockets": [
+    {
+      "name": "SOCKET_Muzzle",
+      "parent": "Muzzle",
+      "position": [
+        0,
+        0.057,
+        0.1953
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Muzzle tip: projectiles, flashes, tracers."
+    },
+    {
+      "name": "SOCKET_Optic",
+      "parent": "Receiver",
+      "position": [
+        0,
+        0.0898,
+        0.0148
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Optic mount point on top of the weapon."
+    },
+    {
+      "name": "SOCKET_ADS",
+      "parent": "Receiver",
+      "position": [
+        0,
+        0.1198,
+        -0.1052
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Eye position when aiming down sights (place the camera here)."
+    },
+    {
+      "name": "SOCKET_Hand_Grip",
+      "parent": "Grip",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Shooting hand on the grip."
+    },
+    {
+      "name": "SOCKET_Hand_Support",
+      "parent": "Grip",
+      "position": [
+        0.02,
+        -0.01,
+        0.005
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Support hand wrapped around the shooting hand (left side)."
+    },
+    {
+      "name": "SOCKET_Magazine",
+      "parent": "Frame",
+      "position": [
+        0,
+        -0.076,
+        -0.0195
+      ],
+      "forward": [
+        0,
+        -0.9757,
+        -0.2189
+      ],
+      "description": "Magazine well at the bottom of the grip."
+    },
+    {
+      "name": "SOCKET_Eject",
+      "parent": "Frame",
+      "position": [
+        -0.0186,
+        0.0738,
+        0.0905
+      ],
+      "forward": [
+        -1,
+        0.6,
+        -0.1
+      ],
+      "description": "Where casings (or heat) come out, right side."
+    }
+  ],
+  "bounds": {
+    "min": [
+      -0.0231,
+      -0.1052,
+      -0.0624
+    ],
+    "max": [
+      0.0231,
+      0.0893,
+      0.1953
+    ],
+    "size": [
+      0.0461,
+      0.1945,
+      0.2577
+    ]
+  },
+  "collision": {
+    "type": "box",
+    "center": [
+      0,
+      -0.0079,
+      0.0665
+    ],
+    "size": [
+      0.0461,
+      0.1945,
+      0.2577
+    ]
+  },
+  "uv": {
+    "tiling": "TEXCOORD_0",
+    "atlas": "TEXCOORD_1",
+    "charts": 373,
+    "coverage": 0.745,
+    "texelsPerMeter": {
+      "1024": 2296,
+      "2048": 4592
+    },
+    "padding": 4
+  },
+  "animations": [
+    {
+      "name": "Fire",
+      "description": "Pull the trigger and fire one shot.",
+      "duration": 0.32,
+      "events": {
+        "shot": 0.06
+      },
+      "parts": [
+        "Trigger"
+      ]
+    },
+    {
+      "name": "Reload",
+      "description": "Swap the magazine, then chamber a round.",
+      "duration": 1.45,
+      "events": {
+        "magOut": 0.45,
+        "magIn": 1.3
+      },
+      "parts": [
+        "Magazine"
+      ]
+    }
+  ],
+  "stats": {
+    "triangles": 868,
+    "vertices": 1614,
+    "meshes": 5,
+    "primitives": 12,
+    "materials": 7
+  },
+  "loadout": {
+    "capacity": 50,
+    "slots": [
+      {
+        "slot": "optic",
+        "variant": "none",
+        "socket": "SOCKET_Optic",
+        "fixed": true,
+        "stats": {
+          "magnification": 1,
+          "adsTime": 1,
+          "sway": 1
+        }
+      },
+      {
+        "slot": "muzzle",
+        "variant": "none",
+        "socket": "SOCKET_Muzzle",
+        "fixed": true,
+        "stats": {
+          "suppressed": false,
+          "recoil": 1,
+          "flash": 1
+        }
+      },
+      {
+        "slot": "underbarrel",
+        "variant": "none",
+        "socket": null,
+        "fixed": false,
+        "stats": {
+          "recoil": 1,
+          "adsTime": 1
+        }
+      }
+    ],
+    "note": "Suggested gameplay stats, a starting point to tune. Multipliers are relative to the bare weapon (1 = unchanged); times in seconds, reach in meters, damage on a 100 hp scale."
+  }
+}

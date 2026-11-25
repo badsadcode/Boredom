@@ -1,0 +1,656 @@
+{
+  "generator": "BadGun",
+  "version": "0.1.0",
+  "name": "BadGun_shotgun_scrap_5",
+  "recipe": {
+    "archetype": "shotgun",
+    "style": "scrap",
+    "seed": 5
+  },
+  "resolved": {
+    "params": {
+      "length": 0.545,
+      "bulk": 0.614,
+      "ornament": 0.101,
+      "detail": 0.528,
+      "smoothness": 0.54,
+      "wear": 0.904
+    },
+    "parts": {
+      "config": "standard",
+      "receiver": "boxy",
+      "barrel": "overunder",
+      "handguard": "splinter",
+      "muzzle": "none",
+      "stock": "pipe",
+      "grip": "plank",
+      "magazine": "none",
+      "underbarrel": "none",
+      "side": "none",
+      "bayonet": "none",
+      "sight": "irons"
+    },
+    "palette": "Hazard"
+  },
+  "conventions": {
+    "units": "meters",
+    "up": "+Y",
+    "forward": "+Z (muzzle direction)",
+    "left": "+X (the ejection port is on the right, -X)",
+    "origin": "Trigger hand on the pistol grip (SOCKET_Hand_Grip)",
+    "uv": "Two UV sets. Tiling: a physical unwrap, 1 UV unit = 0.25 m, for tiling textures and trim sheets (islands may overlap). Atlas: every surface packed once into the 0..1 square with uniform texel density and no overlaps, for hand painting, baking and unique texture sets. See \"uv\" for which set is which.",
+    "materials": "One shared material per semantic slot (MAT_<Slot>); names are stable across regenerations",
+    "sockets": "Empty nodes named SOCKET_*; their +Z axis is the socket forward direction"
+  },
+  "materials": [
+    {
+      "name": "MAT_Body",
+      "slot": "Body",
+      "def": {
+        "label": "hazard yellow paint",
+        "color": "#b19237",
+        "metallic": 0.35,
+        "roughness": 0.8178359275439289
+      }
+    },
+    {
+      "name": "MAT_Barrel",
+      "slot": "Barrel",
+      "def": {
+        "label": "worn pipe steel",
+        "color": "#433e39",
+        "metallic": 0.8,
+        "roughness": 0.7449702985615004
+      }
+    },
+    {
+      "name": "MAT_Grip",
+      "slot": "Grip",
+      "def": {
+        "label": "black tape",
+        "color": "#3a3936",
+        "metallic": 0,
+        "roughness": 0.9271343710175716
+      }
+    },
+    {
+      "name": "MAT_Stock",
+      "slot": "Stock",
+      "def": {
+        "label": "pallet wood",
+        "color": "#a18561",
+        "metallic": 0,
+        "roughness": 0.9271343710175716
+      }
+    },
+    {
+      "name": "MAT_Trim",
+      "slot": "Trim",
+      "def": {
+        "label": "aluminium can / clamps",
+        "color": "#b4ad9f",
+        "metallic": 0.9,
+        "roughness": 0.5992390405966435
+      }
+    },
+    {
+      "name": "MAT_Accent",
+      "slot": "Accent",
+      "def": {
+        "label": "black tape",
+        "color": "#343230",
+        "metallic": 0.1,
+        "roughness": 0.7814031130527146
+      }
+    },
+    {
+      "name": "MAT_Detail",
+      "slot": "Detail",
+      "def": {
+        "label": "bolts and nails",
+        "color": "#312e2b",
+        "metallic": 0.9,
+        "roughness": 0.7085374840702862
+      }
+    }
+  ],
+  "components": [
+    {
+      "name": "Receiver",
+      "kind": "receiver",
+      "variant": "boxy",
+      "parent": null,
+      "pivot": [
+        0,
+        0.066,
+        0.0931
+      ],
+      "materials": [
+        "MAT_Body",
+        "MAT_Detail",
+        "MAT_Trim"
+      ],
+      "triangles": 420
+    },
+    {
+      "name": "ChargingHandle",
+      "kind": "charging_handle",
+      "variant": "hook",
+      "parent": "Receiver",
+      "pivot": [
+        0.0267,
+        0.0898,
+        0.0684
+      ],
+      "motion": {
+        "type": "translate",
+        "axis": [
+          0,
+          0,
+          -1
+        ],
+        "range": [
+          0,
+          0.07
+        ],
+        "purpose": "charge"
+      },
+      "materials": [
+        "MAT_Detail"
+      ],
+      "triangles": 104
+    },
+    {
+      "name": "Trigger",
+      "kind": "trigger",
+      "variant": "blade",
+      "parent": "Receiver",
+      "pivot": [
+        0,
+        0.0274,
+        0.0543
+      ],
+      "motion": {
+        "type": "rotate",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range": [
+          0,
+          0.3
+        ],
+        "purpose": "fire"
+      },
+      "materials": [
+        "MAT_Detail"
+      ],
+      "triangles": 44
+    },
+    {
+      "name": "Barrel",
+      "kind": "barrel",
+      "variant": "overunder",
+      "parent": "Receiver",
+      "pivot": [
+        0,
+        0.0271,
+        0.1084
+      ],
+      "motion": {
+        "type": "rotate",
+        "axis": [
+          1,
+          0,
+          0
+        ],
+        "range": [
+          0,
+          0.55
+        ],
+        "purpose": "break open to reload"
+      },
+      "materials": [
+        "MAT_Barrel",
+        "MAT_Detail",
+        "MAT_Trim"
+      ],
+      "triangles": 184
+    },
+    {
+      "name": "Handguard",
+      "kind": "handguard",
+      "variant": "splinter",
+      "parent": "Barrel",
+      "pivot": [
+        0,
+        0.0271,
+        0.1124
+      ],
+      "materials": [
+        "MAT_Stock",
+        "MAT_Detail"
+      ],
+      "triangles": 152
+    },
+    {
+      "name": "Stock",
+      "kind": "stock",
+      "variant": "pipe",
+      "parent": "Receiver",
+      "pivot": [
+        0,
+        0.066,
+        -0.0269
+      ],
+      "materials": [
+        "MAT_Barrel",
+        "MAT_Grip",
+        "MAT_Accent"
+      ],
+      "triangles": 460
+    },
+    {
+      "name": "Grip",
+      "kind": "grip",
+      "variant": "plank",
+      "parent": "Receiver",
+      "pivot": [
+        0,
+        0.0274,
+        0.0283
+      ],
+      "materials": [
+        "MAT_Stock",
+        "MAT_Detail"
+      ],
+      "triangles": 108
+    },
+    {
+      "name": "Optic",
+      "kind": "optic",
+      "variant": "irons",
+      "parent": "Receiver",
+      "pivot": [
+        0,
+        0.0998,
+        0.0475
+      ],
+      "materials": [
+        "MAT_Detail"
+      ],
+      "triangles": 260
+    },
+    {
+      "name": "FrontSight",
+      "kind": "sight",
+      "variant": "bead",
+      "parent": "Barrel",
+      "pivot": [
+        0,
+        0.0785,
+        0.6253
+      ],
+      "materials": [
+        "MAT_Trim"
+      ],
+      "triangles": 48
+    }
+  ],
+  "sockets": [
+    {
+      "name": "SOCKET_Muzzle_2",
+      "parent": "Barrel",
+      "position": [
+        0,
+        0.0396,
+        0.6373
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Lower barrel muzzle."
+    },
+    {
+      "name": "SOCKET_Muzzle",
+      "parent": "Muzzle",
+      "position": [
+        0,
+        0.066,
+        0.6373
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Muzzle tip: projectiles, flashes, tracers."
+    },
+    {
+      "name": "SOCKET_Shoulder",
+      "parent": "Stock",
+      "position": [
+        0,
+        0.0409,
+        -0.3471
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ],
+      "description": "Taped shoulder pad."
+    },
+    {
+      "name": "SOCKET_Optic",
+      "parent": "Receiver",
+      "position": [
+        0,
+        0.0998,
+        0.0475
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Optic mount point on top of the weapon."
+    },
+    {
+      "name": "SOCKET_ADS",
+      "parent": "Receiver",
+      "position": [
+        0,
+        0.1158,
+        -0.0769
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Eye position when aiming down sights (place the camera here)."
+    },
+    {
+      "name": "SOCKET_Hand_Grip",
+      "parent": "Grip",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Trigger hand on the pistol grip."
+    },
+    {
+      "name": "SOCKET_Hand_Support",
+      "parent": "Handguard",
+      "position": [
+        0,
+        0.0291,
+        0.2062
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Support hand on the pump."
+    },
+    {
+      "name": "SOCKET_Underbarrel",
+      "parent": "Handguard",
+      "position": [
+        0,
+        0.0411,
+        0.1973
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Underbarrel attachment mount (grip, launcher). Attachments hang down from here."
+    },
+    {
+      "name": "SOCKET_Side",
+      "parent": "Handguard",
+      "position": [
+        -0.0249,
+        0.066,
+        0.2312
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Right-side rail mount (light, laser). Side attachments are built already turned to this side."
+    },
+    {
+      "name": "SOCKET_Barrel_End",
+      "parent": "Barrel",
+      "position": [
+        0,
+        0.066,
+        0.6373
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Bare barrel tip: muzzle devices screw on here."
+    },
+    {
+      "name": "SOCKET_Bayonet",
+      "parent": "Barrel",
+      "position": [
+        0,
+        0.0535,
+        0.5523
+      ],
+      "forward": [
+        0,
+        0,
+        1
+      ],
+      "description": "Bayonet lug under the barrel: bayonets snap on here, blade toward +Z."
+    },
+    {
+      "name": "SOCKET_Magazine",
+      "parent": "Receiver",
+      "position": [
+        0,
+        0.0234,
+        0.0943
+      ],
+      "forward": [
+        0,
+        -1,
+        0
+      ],
+      "description": "Loading port: shells go in here."
+    },
+    {
+      "name": "SOCKET_Eject",
+      "parent": "Receiver",
+      "position": [
+        -0.0307,
+        0.07,
+        0.0475
+      ],
+      "forward": [
+        -1,
+        0.3,
+        -0.2
+      ],
+      "description": "Ejection port on the right side: shell casings / heat vents."
+    }
+  ],
+  "bounds": {
+    "min": [
+      -0.0278,
+      -0.0743,
+      -0.3471
+    ],
+    "max": [
+      0.0427,
+      0.1208,
+      0.6373
+    ],
+    "size": [
+      0.0705,
+      0.1951,
+      0.9844
+    ]
+  },
+  "collision": {
+    "type": "box",
+    "center": [
+      0.0075,
+      0.0233,
+      0.1451
+    ],
+    "size": [
+      0.0705,
+      0.1951,
+      0.9844
+    ]
+  },
+  "uv": {
+    "tiling": "TEXCOORD_0",
+    "atlas": "TEXCOORD_1",
+    "charts": 436,
+    "coverage": 0.737,
+    "texelsPerMeter": {
+      "1024": 1454,
+      "2048": 2909
+    },
+    "padding": 4
+  },
+  "animations": [
+    {
+      "name": "Fire",
+      "description": "Pull the trigger and fire one shot.",
+      "duration": 0.32,
+      "events": {
+        "shot": 0.06
+      },
+      "parts": [
+        "Trigger"
+      ]
+    },
+    {
+      "name": "Reload",
+      "description": "Break open, swap shells, snap shut.",
+      "duration": 1.55,
+      "events": {
+        "open": 0.4,
+        "shellsIn": 0.9,
+        "close": 1.4
+      },
+      "parts": [
+        "Barrel"
+      ]
+    },
+    {
+      "name": "Cycle",
+      "description": "Pull and release the charging handle.",
+      "duration": 0.38,
+      "events": {
+        "back": 0.2,
+        "release": 0.28
+      },
+      "parts": [
+        "ChargingHandle"
+      ]
+    }
+  ],
+  "stats": {
+    "triangles": 1780,
+    "vertices": 2652,
+    "meshes": 9,
+    "primitives": 17,
+    "materials": 7
+  },
+  "loadout": {
+    "capacity": 2,
+    "slots": [
+      {
+        "slot": "optic",
+        "variant": "irons",
+        "socket": "SOCKET_Optic",
+        "fixed": true,
+        "stats": {
+          "magnification": 1,
+          "adsTime": 1,
+          "sway": 1
+        }
+      },
+      {
+        "slot": "muzzle",
+        "variant": "none",
+        "socket": "SOCKET_Barrel_End",
+        "fixed": true,
+        "stats": {
+          "suppressed": false,
+          "recoil": 1,
+          "flash": 1
+        }
+      },
+      {
+        "slot": "underbarrel",
+        "variant": "none",
+        "socket": "SOCKET_Underbarrel",
+        "fixed": false,
+        "stats": {
+          "recoil": 1,
+          "adsTime": 1
+        }
+      },
+      {
+        "slot": "side",
+        "variant": "none",
+        "socket": "SOCKET_Side",
+        "fixed": false,
+        "stats": {
+          "light": false,
+          "laser": false,
+          "hipSpread": 1
+        }
+      },
+      {
+        "slot": "bayonet",
+        "variant": "none",
+        "socket": "SOCKET_Bayonet",
+        "fixed": false,
+        "stats": {
+          "reach": 0,
+          "damage": 0,
+          "mobility": 1
+        }
+      },
+      {
+        "slot": "magazine",
+        "variant": "none",
+        "socket": "SOCKET_Magazine",
+        "fixed": true,
+        "stats": {
+          "capacity": 1,
+          "reloadTime": 2.4,
+          "mobility": 1,
+          "reload": "single"
+        }
+      }
+    ],
+    "note": "Suggested gameplay stats, a starting point to tune. Multipliers are relative to the bare weapon (1 = unchanged); times in seconds, reach in meters, damage on a 100 hp scale."
+  }
+}
