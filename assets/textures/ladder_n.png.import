@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bidg87dvbnats"
-path="res://.godot/imported/look_modern.png-c6390dde68dd36c70d1ed09c71a08cee.ctex"
+uid="uid://dhnsobidh6oia"
+path="res://.godot/imported/ladder_n.png-803799fcd41635965b2e548acb73dcab.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/look_modern.png"
-dest_files=["res://.godot/imported/look_modern.png-c6390dde68dd36c70d1ed09c71a08cee.ctex"]
+source_file="res://assets/textures/ladder_n.png"
+dest_files=["res://.godot/imported/ladder_n.png-803799fcd41635965b2e548acb73dcab.ctex"]
 
 [params]
 

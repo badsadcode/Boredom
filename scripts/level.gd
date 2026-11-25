@@ -26,13 +26,45 @@ func build(path: String) -> void:
 	_entity_root.name = "Entities"
 	add_child(_entity_root)
 
-	Retro.retrofy(world_root, 0.35, Vector2(520, 390), Color(0.56, 0.62, 0.58))
+	_retrofy_world(path.get_basename() + ".json")
 	_style_sky()
 	_add_collision()
 	_spawn_entities()
 	_bake_nav()
 	Retro.changed.connect(_on_retro_changed)
 	_on_retro_changed(Retro.level)
+
+
+# Facility sectors get their own colour identity (BadLevel tags every room with one).
+const SECTOR_TINT: Dictionary = {
+	"admin": Color(0.86, 0.80, 0.66),      # warm office beige
+	"research": Color(0.62, 0.78, 0.82),   # cold lab teal
+	"reactor": Color(0.82, 0.56, 0.40),    # hot rust
+	"storage": Color(0.70, 0.66, 0.58),
+	"maintenance": Color(0.58, 0.68, 0.52),
+}
+const NEUTRAL_TINT: Color = Color(0.68, 0.70, 0.68)
+const WORLD_SNAP_STRENGTH: float = 0.35
+const WORLD_SNAP_GRID: Vector2 = Vector2(520, 390)
+
+
+func _retrofy_world(json_path: String) -> void:
+	var sector_of: Dictionary = {}   # room id -> sector name
+	if FileAccess.file_exists(json_path):
+		var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(json_path))
+		if parsed is Dictionary:
+			for r: Variant in (parsed as Dictionary).get("rooms", []):
+				var rd: Dictionary = r as Dictionary
+				sector_of[int(rd.get("id", -1))] = str((rd.get("meta", {}) as Dictionary).get("sector", ""))
+	# rooms first, each with its sector tint; everything left (corridors, doors...) gets neutral
+	for n in world_root.find_children("room_*", "Node3D", true, false):
+		var area: String = str(_extras(n).get("area", ""))
+		if not area.begins_with("room:") or n is MeshInstance3D:
+			continue
+		var sector: String = str(sector_of.get(int(area.get_slice(":", 1)), ""))
+		var tint: Color = SECTOR_TINT.get(sector, NEUTRAL_TINT)
+		Retro.retrofy(n, WORLD_SNAP_STRENGTH, WORLD_SNAP_GRID, tint, true)
+	Retro.retrofy(world_root, WORLD_SNAP_STRENGTH, WORLD_SNAP_GRID, NEUTRAL_TINT, true)
 
 
 func _extras(n: Node) -> Dictionary:

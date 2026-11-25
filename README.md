@@ -12,7 +12,31 @@ A survival-action-horror vertical slice in **Godot 4.7**, built entirely from ou
 
 | Modern | Mixed | PS1 |
 |---|---|---|
-| ![modern](docs/look_modern.png) | ![mixed](docs/look_mixed.png) | ![ps1](docs/look_ps1.png) |
+| ![modern](docs/look_modern.jpg) | ![mixed](docs/look_mixed.jpg) | ![ps1](docs/look_ps1.jpg) |
+
+## Textures and animation
+
+**Level textures** are procedural 2 m tiles (`tools/gen_textures.py`, seeded): slabbed concrete floors,
+panelled and grimy walls, acoustic ceiling tiles, red and blue blast doors, a secret door that is almost a
+wall, diamond-plate lifts. Each has a normal map that fades out as the retro dial goes up, and the PS1 look
+samples a coarser mip with nearest filtering. BadLevel tags every room with a facility *sector*; each sector
+gets its own colour identity (admin beige, research teal, reactor rust).
+
+![aim pose](docs/aim_pose.jpg)
+
+**Death** is built in the same layer (BadCharacters ships no death clip): the body pivots around the feet with a
+gravity-style ease-in, limbs react, it lands with a bounce and a thud. Shot from the front, a zombie topples
+backwards; from behind, its knees give way and it face-plants. Dale goes down the same way, in third person,
+before the "YOU DIED" banner. `tools/death_stage.tscn` renders this filmstrip (fixed timestep, repeatable).
+
+![death filmstrip](docs/death.png)
+
+**Animation.** BadCharacters ships 7 baked clips (Idle, Walk, Run, Jump, Wave, Punch, RestPose); we use
+them all but RestPose: Idle/Walk/Run/Jump for movement, **Punch** for the player's melee (`Q`) and the
+zombies' attack, **Wave** when you reach the exit. What the generator doesn't ship is layered on top by
+`scripts/pose_layer.gd` (a SkeletonModifier3D): a gun-aim pose that follows camera pitch, a zombie shamble
+(arms out, head hung, hunched), hit flinches and death. New clips (crouch, reload poses) belong in
+BadCharacters itself; this layer is the stopgap.
 
 ## The retro dial
 
@@ -42,7 +66,7 @@ godot --path .
 | | |
 |---|---|
 | Move / sprint / jump | `WASD` / `Shift` / `Space` |
-| Fire / reload | left mouse / `R` |
+| Fire / reload / punch | left mouse / `R` / `Q` |
 | Use (doors) | `E` |
 | Flashlight | `F` |
 | First / third person | `V` |
@@ -89,10 +113,12 @@ everything (spawns, doors, keys, lights, exit) from the GLB's entity nodes, so n
 godot --headless --path . -- --selftest
 ```
 
-19 checks against the real game: player settles on the floor, 44 zombies spawn, navmesh bakes and
+27 checks against the real game: player settles on the floor, 44 zombies spawn, navmesh bakes and
 paths zombie to player, the crosshair hits a zombie and damages it, ammo is spent, a zombie wakes,
-chases and hurts the player, a locked door refuses then opens with the key, pickups collect (health,
-weapon, ammo via the trigger area), reaching the exit wins.
+chases and hurts the player, chasing zombies and the aiming player hold their hands out in front
+(measured on the skeleton), the punch plays its clip and hurts, a locked door refuses then opens with
+the key, pickups collect (health, weapon, ammo via the trigger area), reaching the exit wins, and
+both zombie and player really go down (head height measured after the fall).
 
 ## Layout
 
@@ -103,8 +129,10 @@ scripts/player.gd       FPP/TPP, weapons, flashlight, interaction
 scripts/enemy.gd        zombie AI
 scripts/door.gd         locked / secret doors     scripts/pickup.gd   health, ammo, keys, guns
 scripts/hud.gd          text HUD                  scripts/sfx.gd      procedural sounds (no audio assets)
+scripts/pose_layer.gd   aim / shamble / flinch layers on the baked clips
+scripts/world_textures.gd  texture set for the level materials
 scripts/step_helper.gd  step-up for BadLevel's 0.5 m stairs
-tools/                  asset regen, GLB inspection helpers
+tools/                  asset regen, texture generator, GLB inspection helpers
 ```
 
 ## Honest status
@@ -113,7 +141,7 @@ tools/                  asset regen, GLB inspection helpers
   physics. **Not yet seen in Forward+** (no Vulkan driver in the build container), so SSAO, SSIL,
   glow and volumetric fog are set but unverified. If Forward+ misbehaves, try
   `godot --path . --rendering-method gl_compatibility` and tell us what you see.
-* One level, one enemy type, three guns. No saving, no menu, no music; sounds are synthesized.
+* One level, one enemy type, three guns. No crouch clip yet (see above). No saving, no menu, no music; sounds are synthesized.
 * Zombies are simple: they cannot open doors, and closed doors cut the navmesh (it isn't rebaked).
 * Lifts and ladders in other seeds are static geometry; this seed has none that matter.
 * Balance is a first guess.

@@ -72,34 +72,44 @@ func shadows_wanted() -> bool:
 ## Transparent materials (glass, triggers) stay as they are.
 ## `snap_strength` and `snap_grid` tune the PS1 vertex wobble per call: the static level uses
 ## a gentle one (large polygons crack at T-junctions if snapped hard), objects use the full one.
-func retrofy(root: Node, snap_strength: float = 1.0, snap_grid: Vector2 = Vector2(200, 150), tint: Color = Color.WHITE) -> void:
+func retrofy(root: Node, snap_strength: float = 1.0, snap_grid: Vector2 = Vector2(200, 150), tint: Color = Color.WHITE, textured: bool = false) -> void:
 	for n in root.find_children("*", "MeshInstance3D", true, false):
 		var mi: MeshInstance3D = n
 		if mi.mesh == null:
 			continue
 		for s in mi.mesh.get_surface_count():
 			var src: Material = mi.get_active_material(s)
-			var conv: Material = _convert(src, snap_strength, snap_grid, tint)
+			var conv: Material = _convert(src, snap_strength, snap_grid, tint, textured)
 			if conv != src:
 				mi.set_surface_override_material(s, conv)
 
 
-func _convert(src: Material, snap_strength: float, snap_grid: Vector2, tint: Color) -> Material:
+func _convert(src: Material, snap_strength: float, snap_grid: Vector2, tint: Color, textured: bool) -> Material:
 	var std := src as StandardMaterial3D
 	if std == null:
 		return src
 	if std.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED or std.albedo_color.a < 0.99:
 		return src
-	var key: String = "%d_%.2f_%d_%s" % [std.get_instance_id(), snap_strength, int(snap_grid.x), tint.to_html()]
+	var use_world_tex: bool = textured and WorldTextures.has(std.resource_name)
+	var key: String = "%d_%.2f_%d_%s_%d" % [std.get_instance_id(), snap_strength, int(snap_grid.x), tint.to_html(), int(use_world_tex)]
 	if _mat_cache.has(key):
 		return _mat_cache[key]
 	var sm := ShaderMaterial.new()
 	sm.shader = _shader_for(std.cull_mode == BaseMaterial3D.CULL_DISABLED)
 	sm.set_shader_parameter("snap_strength", snap_strength)
 	sm.set_shader_parameter("snap_grid", snap_grid)
-	sm.set_shader_parameter("albedo_color", std.albedo_color * tint)
+	if use_world_tex:
+		# The texture carries the colour; the blockout colour would only darken it.
+		sm.set_shader_parameter("albedo_color", tint)
+		sm.set_shader_parameter("use_tex", true)
+		sm.set_shader_parameter("albedo_tex", WorldTextures.albedo(std.resource_name))
+		sm.set_shader_parameter("use_normal", true)
+		sm.set_shader_parameter("normal_tex", WorldTextures.normal(std.resource_name))
+		sm.set_shader_parameter("normal_strength", 0.8)
+	else:
+		sm.set_shader_parameter("albedo_color", std.albedo_color * tint)
 	sm.set_shader_parameter("use_vcol", std.vertex_color_use_as_albedo)
-	if std.albedo_texture != null:
+	if not use_world_tex and std.albedo_texture != null:
 		sm.set_shader_parameter("use_tex", true)
 		sm.set_shader_parameter("albedo_tex", std.albedo_texture)
 	sm.set_shader_parameter("metallic_val", std.metallic)

@@ -57,6 +57,10 @@ var _cooldown: float = 0.0
 var _reload_left: float = 0.0
 var _kick: float = 0.0
 var _noise_timer: float = 0.0
+var _melee_cd: float = 0.0
+var _anim_lock: float = 0.0   # while > 0 a one-shot clip (Punch, Wave) owns the body
+var _celebrating: bool = false
+var _pose: PoseLayer
 var _pitch: float = 0.0
 var _stepped_frame: bool = false
 const SENS: float = 0.0022
@@ -90,9 +94,13 @@ func _build() -> void:
 	Retro.retrofy(model)
 	_model_anim = model.find_child("AnimationPlayer", true, false) as AnimationPlayer
 	if _model_anim:
-		for a in ["Idle", "Walk", "Run"]:
+		for a in ["Idle", "Walk", "Run", "Wave"]:
 			if _model_anim.has_animation(a):
 				_model_anim.get_animation(a).loop_mode = Animation.LOOP_LINEAR
+	var skel: Skeleton3D = model.find_child("Skeleton3D", true, false) as Skeleton3D
+	if skel:
+		_pose = PoseLayer.new()
+		skel.add_child(_pose)
 	_hand = model.find_child("Socket_RightHand", true, false) as Node3D
 
 	head = Node3D.new()
@@ -133,7 +141,7 @@ func _setup_input() -> void:
 	var map: Dictionary = {
 		"move_forward": KEY_W, "move_back": KEY_S, "move_left": KEY_A, "move_right": KEY_D,
 		"jump": KEY_SPACE, "sprint": KEY_SHIFT, "interact": KEY_E, "reload": KEY_R,
-		"flashlight": KEY_F, "toggle_view": KEY_V,
+		"flashlight": KEY_F, "toggle_view": KEY_V, "melee": KEY_Q,
 		"weapon_1": KEY_1, "weapon_2": KEY_2, "weapon_3": KEY_3,
 	}
 	for action: String in map:
@@ -180,6 +188,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_start_reload()
 	elif event.is_action_pressed("interact"):
 		_interact()
+	elif event.is_action_pressed("melee"):
+		_melee()
 	elif event.is_action_pressed("weapon_1"):
 		_equip(0)
 	elif event.is_action_pressed("weapon_2"):
@@ -330,6 +340,43 @@ func _finish_reload() -> void:
 	Sfx.play("reload", 1.3)
 
 
+# ---------------------------------------------------------------- melee / celebrate
+
+## Quick punch (Q): BadCharacters' Punch clip, a short reach, knockback.
+func _melee() -> void:
+	if _melee_cd > 0.0 or dead or _celebrating:
+		return
+	_melee_cd = 0.75
+	_anim_lock = 0.7
+	if _model_anim and _model_anim.has_animation("Punch"):
+		_model_anim.play("Punch", 0.05)
+	_kick = 0.12
+	Sfx.play("hit", 0.7)
+	get_tree().create_timer(0.25).timeout.connect(_melee_hit)
+
+
+func _melee_hit() -> void:
+	if dead:
+		return
+	var fwd: Vector3 = -global_transform.basis.z
+	for z: Node in get_tree().get_nodes_in_group("enemy"):
+		var zn: Node3D = z as Node3D
+		var d: Vector3 = zn.global_position - global_position
+		var flat: Vector3 = Vector3(d.x, 0.0, d.z)
+		if flat.length() < 1.9 and absf(d.y) < 1.6 and fwd.dot(flat.normalized()) > 0.45:
+			zn.call("take_damage", 30.0, global_position)
+			zn.call("knock_back", flat.normalized() * 5.5)
+			Sfx.play("hit", 0.9)
+
+
+## Reached the exit: step into view and wave (the Wave clip, finally).
+func celebrate() -> void:
+	_celebrating = true
+	_set_view(false, false)
+	if _model_anim and _model_anim.has_animation("Wave"):
+		_model_anim.play("Wave", 0.2)
+
+
 # ---------------------------------------------------------------- interaction / pickups
 
 func _interact() -> void:
@@ -412,8 +459,22 @@ func take_damage(amount: float, _from: Vector3 = Vector3.ZERO) -> void:
 	if health <= 0.0:
 		health = 0.0
 		dead = true
+		_die()
 		died.emit()
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+## Dale goes down in third person, so you see it happen.
+func _die() -> void:
+	if _model_anim:
+		_model_anim.play("RestPose", 0.1)
+	if _pose:
+		_pose.die(0 if randf() < 0.5 else 1)
+	_set_view(false, false)
+	model.visible = true
+	flashlight.visible = false
+	get_tree().create_timer(0.7).timeout.connect(func() -> void:
+		Sfx.play("hit", 0.45))
 
 
 ## How far a zombie can "hear" us right now.
@@ -440,6 +501,17 @@ func _process(delta: float) -> void:
 	_vm_root.position = (w["vm"] as Vector3) + Vector3(0, 0.015, _kick * 2.5)
 	_vm_root.rotation.x = _kick * 2.0
 	_noise_timer = maxf(0.0, _noise_timer - delta)
+	if not fpp:
+		# a wall right behind us pulls the camera into the character: fade the body out
+		model.visible = arm.get_hit_length() > 0.9
+	_melee_cd = maxf(0.0, _melee_cd - delta)
+	_anim_lock = maxf(0.0, _anim_lock - delta)
+	if _pose:
+		var flat_speed: float = Vector2(velocity.x, velocity.z).length()
+		var sprinting: bool = flat_speed > WALK_SPEED + 0.5
+		var arms_up: bool = not (fpp or _anim_lock > 0.0 or _celebrating or sprinting)
+		_pose.aim = move_toward(_pose.aim, 1.0 if arms_up else 0.0, delta * 7.0)
+		_pose.aim_pitch = _pitch
 	var t: Node = _look_target()
 	prompt_text = ""
 	if t and t.get_parent().has_method("prompt"):
@@ -477,7 +549,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _animate(input_dir: Vector2, speed: float) -> void:
-	if _model_anim == null:
+	if _model_anim == null or _anim_lock > 0.0 or _celebrating:
 		return
 	var want: String = "Idle"
 	if not is_on_floor():

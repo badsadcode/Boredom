@@ -7,6 +7,9 @@ extends Node3D
 ##   --frames=40
 ##   --tpp              start in third person
 ##   --god              invulnerable
+##   --orbit=deg        turn the third-person camera around the player (debug)
+##   --zombie=metres    spawn one chasing zombie that far in front of the player (debug)
+##   --kill=front|back  kill that zombie after 0.4 s from that side (debug, for death shots)
 ##   --at=x,y,z,yawdeg,pitchdeg   teleport the player
 ##   --level=res://assets/level/facility.glb
 
@@ -54,6 +57,18 @@ func _ready() -> void:
 		player.head.rotation.x = player._pitch
 	if opts.has("tpp"):
 		player._set_view(false, true)
+	if opts.has("zombie"):
+		var z := Zombie.new()
+		level.get_node("Entities").add_child(z)
+		z.setup(2, 0)
+		z.global_position = player.global_position - player.global_transform.basis.z * float(opts["zombie"])
+		z.state = Zombie.State.CHASE
+		if opts.has("kill"):
+			get_tree().create_timer(0.4).timeout.connect(func() -> void:
+				var side: float = -3.0 if str(opts["kill"]) == "front" else 3.0
+				z.take_damage(9999.0, z.global_position + z.global_transform.basis.z * side))
+	if opts.has("orbit"):
+		player.arm.rotation.y = deg_to_rad(float(opts["orbit"]))
 
 	hud = Hud.new()
 	add_child(hud)
@@ -115,6 +130,7 @@ func _on_exit() -> void:
 	if _won:
 		return
 	_won = true
+	player.celebrate()
 	hud.banner("SECTOR CLEARED\npress R to go again", Color(0.4, 1.0, 0.5))
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
@@ -197,6 +213,37 @@ func _selftest() -> void:
 	check.call("zombie woke up and chased", best.state == Zombie.State.CHASE, "state=%d closest=%.1f m" % [best.state, closest])
 	check.call("zombie reached and hurt the player", player.health < hp0, "hp %.0f after %.1fs" % [player.health, t])
 
+	# animation layers: measured on the skeleton, not by eye
+	check.call("chasing zombie reaches forward", best.state == Zombie.State.CHASE and best._pose.hand_forward > 0.3,
+		"hand %.2f m ahead of hips" % best._pose.hand_forward)
+	player._set_view(false, true)
+	for _i in 40:
+		await get_tree().physics_frame
+		await get_tree().process_frame
+	check.call("player raises the gun in third person", player._pose.hand_forward > 0.3,
+		"hand %.2f m ahead of hips" % player._pose.hand_forward)
+	player._set_view(true, true)
+
+	# melee (Punch clip): face the zombie and hit it
+	var toward: Vector3 = best.global_position - player.global_position
+	player.rotation.y = atan2(-toward.x, -toward.z)
+	best.global_position = player.global_position - player.global_transform.basis.z * 1.1
+	best.health = 80.0
+	best.state = Zombie.State.IDLE
+	var mh: float = best.health
+	player._melee()
+	check.call("punch plays the Punch clip", player._model_anim.current_animation == "Punch")
+	for _i in 45:
+		await get_tree().physics_frame
+	check.call("punch hurts the zombie", best.health < mh, "%.0f -> %.0f hp" % [mh, best.health])
+
+	# death: topples with real animation, measured by how low the head ends up
+	check.call("zombie is upright before dying", best._pose.head_height > 1.2, "head %.2f m" % best._pose.head_height)
+	best.take_damage(9999.0, player.global_position)
+	await get_tree().create_timer(1.7).timeout
+	check.call("zombie dies and falls to the floor", best.state == Zombie.State.DEAD and best._pose.head_height < 0.6,
+		"head %.2f m, body pitch %.0f deg" % [best._pose.head_height, rad_to_deg(best._pose.death_angle)])
+
 	# doors: locked without the key, opens with it
 	var door: Node = doors[0]
 	var key: String = door.key_color
@@ -234,6 +281,12 @@ func _selftest() -> void:
 		for _i in 8:
 			await get_tree().physics_frame
 		check.call("reaching the exit wins", _won)
+
+	# and the player: dies on screen
+	player.take_damage(9999.0)
+	await get_tree().create_timer(1.7).timeout
+	check.call("player dies and falls to the floor", player.dead and player._pose.head_height < 0.6,
+		"head %.2f m, body pitch %.0f deg" % [player._pose.head_height, rad_to_deg(player._pose.death_angle)])
 
 	print("---- selftest: ", "ALL PASSED" if _fails == 0 else "%d FAILED" % _fails)
 	get_tree().quit(1 if _fails > 0 else 0)

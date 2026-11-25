@@ -50,7 +50,7 @@ func setup(p: Player) -> void:
 	_retro.size = Vector2(404, 24)
 	_retro.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_help = _label(root, Control.PRESET_TOP_LEFT, Vector2(16, 14), 16)
-	_help.text = "WASD move  Shift sprint  Space jump  LMB fire  R reload  E use  F flashlight\nV first/third person   1-3 / wheel weapons   [ ] retro dial   F1 modern  F2 mixed  F3 PS1"
+	_help.text = "WASD move  Shift sprint  Space jump  LMB fire  R reload  Q punch  E use  F flashlight\nV first/third person   1-3 / wheel weapons   [ ] retro dial   F1 modern  F2 mixed  F3 PS1"
 
 	_msgs = VBoxContainer.new()
 	_msgs.set_anchors_preset(Control.PRESET_CENTER_TOP)
@@ -71,7 +71,9 @@ func setup(p: Player) -> void:
 
 	p.message.connect(show_message)
 	p.damaged.connect(_on_damaged)
-	p.died.connect(func() -> void: banner("YOU DIED\npress R to try again", Color(0.9, 0.1, 0.1)))
+	p.died.connect(func() -> void:
+		get_tree().create_timer(1.4).timeout.connect(func() -> void:
+			banner("YOU DIED\npress R to try again", Color(0.9, 0.1, 0.1))))
 	Retro.changed.connect(func(_v: float) -> void: _update_retro())
 	_update_retro()
 

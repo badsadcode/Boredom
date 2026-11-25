@@ -11,7 +11,10 @@ render_mode cull_back, diffuse_burley, specular_schlick_ggx;
 global uniform float retro;
 
 uniform sampler2D albedo_tex : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D normal_tex : hint_normal, filter_linear_mipmap, repeat_enable;
 uniform bool use_tex = false;
+uniform bool use_normal = false;
+uniform float normal_strength = 1.0;
 uniform bool use_vcol = false;
 uniform vec4 albedo_color : source_color = vec4(1.0);
 uniform float metallic_val : hint_range(0.0, 1.0) = 0.0;
@@ -59,12 +62,19 @@ void fragment() {
 		col *= COLOR;
 	}
 	if (use_tex) {
-		vec2 tsz = vec2(textureSize(albedo_tex, 0));
+		// PS1 end: nearest texels from one mip down (chunkier, like a 64 px/m console texture).
+		int lod_i = int(round(smoothstep(0.6, 0.95, retro)));
+		vec2 tsz = vec2(textureSize(albedo_tex, lod_i));
 		vec2 uv_near = (floor(uv * tsz) + 0.5) / tsz;
 		float near_amt = smoothstep(0.3, 0.8, retro);
 		vec4 smooth_s = texture(albedo_tex, uv);
-		vec4 near_s = textureLod(albedo_tex, uv_near, 0.0);
+		vec4 near_s = textureLod(albedo_tex, uv_near, float(lod_i));
 		col *= mix(smooth_s, near_s, near_amt);
+	}
+	if (use_normal) {
+		// Modern layer: surface relief fades out as the dial goes up.
+		NORMAL_MAP = texture(normal_tex, uv).rgb;
+		NORMAL_MAP_DEPTH = normal_strength * (1.0 - smoothstep(0.3, 0.9, retro));
 	}
 
 	// Banded colour depth.
