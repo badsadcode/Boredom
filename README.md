@@ -68,6 +68,15 @@ drop ammo or health. A secret door hides something nice.
 --selftest                      headless gameplay test (see below)
 ```
 
+## Windows exe
+
+`export_presets.cfg` has a "Windows Desktop" preset (single exe, data embedded). With the export
+templates installed (Editor > Manage Export Templates):
+
+```bash
+godot --headless --path . --export-release "Windows Desktop" build/Site19Oregon.exe
+```
+
 ## New facility, new guns
 
 `tools/regen_assets.sh [seed]` rebuilds the level, guns and characters from checkouts of the three
